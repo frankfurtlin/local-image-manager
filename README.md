@@ -47,26 +47,27 @@ npm start
 
 ## 运行截图
 
+
 <details>
   <summary>1. 首页</summary>
-  ![首页运行截图](./screenshots/1.jpg)
+  <img src="./screenshots/1.jpg" alt="首页运行截图" width="288" height="640" style="margin: 10px">
 </details>
 
 <details>
   <summary>2. 预览图片</summary>
-  ![预览图片截图](./screenshots/preview.jpg)
+  <img src="./screenshots/preview.jpg" alt="预览图片截图" width="288" height="640" style="margin: 10px">
 </details>
 
 <details>
   <summary>3. 新建文件夹及成功</summary>
-  ![新建文件夹截图](./screenshots/create_dir.jpg)
-  ![新建文件夹成功截图](./screenshots/create_dir_success.jpg)
+  <img src="./screenshots/create_dir.jpg" alt="新建文件夹截图" width="288" height="640" style="margin: 10px">
+  <img src="./screenshots/create_dir_success.jpg" alt="新建文件夹成功截图" width="288" height="640" style="margin: 10px">
 </details>
 
 <details>
   <summary>4. 上传图片进度条及成功</summary>
-  ![上传图片进度条截图](./screenshots/upload_images.jpg)
-  ![上传图片进度条成功截图](./screenshots/upload_img_success.jpg)
+  <img src="./screenshots/upload_images.jpg" alt="上传图片进度条截图" width="288" height="640" style="margin: 10px">
+  <img src="./screenshots/upload_img_success.jpg" alt="上传图片进度条成功截图" width="288" height="640" style="margin: 10px">
 </details>
 
 ---
