@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title><%= title %></title>
+  <style>
+    h1 {
+      text-align: center;
+      font-size: 40px;
+      color: #333333;
+    }
+
+    .folder {
+      height: 120px;
+      display: flex;
+      align-items: center;
+      margin-bottom: 2px;
+      cursor: pointer;
+    }
+
+    .folder-icon {
+      width: 80px;
+      height: 80px;
+      margin-left: 40px;
+      margin-right: 40px;
+      fill:rgb(0, 102, 255);
+    }
+
+    .folder-name {
+      font-size: 60px;
+      color: #444;
+    }
+
+    .folder-modified-time {
+      font-size: 40px;
+      color: #444;
+      margin-left: auto;
+      margin-right: 40px;
+    }
+
+    hr {
+      height: 2px;
+      margin-bottom: 40px;
+      background-image: linear-gradient(to right, #000, #fff);
+    }
+
+    .photos-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      margin-left: 40px;
+      margin-right: 40px;
+    }
+
+    .photo {
+      flex-basis: calc(50% - 20px);
+      margin-bottom: 5px;
+      border: 2px solid #ccc;
+      padding: 5px;
+    }
+
+    .photo img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      cursor: pointer;
+    }
+
+    /* 预览图片遮罩层 */
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.9);
+      z-index: 9999;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .overlay img {
+      max-width: 90%;
+      max-height: 90%;
+    }
+
+    .overlay-buttons {
+      margin-top: 20px;
+    }
+
+    .overlay-buttons button {
+      width: 300px;
+      height: 80px;
+      margin: 10px;
+      font-size: 32px;
+      border-radius: 16px;
+      background-color: #ccc;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .overlay-buttons button:hover {
+      background-color: #aaa;
+    }
+
+    .add-button {
+      position: fixed;
+      right: 60px;
+      bottom: 240px;
+      width: 160px;
+      height: 160px;
+      background-color: #00bcd4;
+      font-size: 27px;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 160px;
+      cursor: pointer;
+      border: 2px solid #666;
+    }
+
+    .upload-button {
+      position: fixed;
+      right: 60px;
+      bottom: 60px;
+      width: 160px;
+      height: 160px;
+      background-color: #00bcd4;
+      font-size: 30px;
+      color: white;
+      border-radius: 50%;
+      text-align: center;
+      line-height: 160px;
+      cursor: pointer;
+      border: 2px solid #666;
+    }
+
+    /* 新建文件夹遮罩层 */
+    .overlay-content {
+      display: flex;
+      flex-direction: column; /* 子元素垂直排列 */
+      align-items: center; /* 水平居中 */
+      justify-content: center; /* 垂直居中 */
+      width: 100%; /* 可以根据需要调整宽度 */
+      height: 100vh; /* 使用视口高度使.overlay-content填满整个屏幕 */
+      position: fixed; /* 固定位置 */
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      margin: auto; /* 自动外边距有助于居中 */
+      /* background-color: rgba(0, 0, 0, 0.5); 半透明背景 */
+    }
+    
+    .overlay-content input {
+      margin-bottom: 40px; /* 输入框和按钮之间的间距 */
+      border-radius: 25px; /* 圆角 */
+      font-size: 36px; /* 字体大小 */
+      padding: 10px 20px; /* 内边距 */
+      width: 50%; /* 宽度占屏幕的50% */
+      height: 80px;
+    }
+    
+    .overlay-content button {
+      background-color: #007bff;
+      border-radius: 25px; /* 圆角 */
+      font-size: 36px; /* 字体大小 */
+      padding: 10px 20px; /* 内边距 */
+      width: 30%; /* 宽度占屏幕的30% */
+      cursor: pointer; /* 鼠标悬停时显示指针手型 */
+    }
+
+    /* 进度条容器样式 */
+    #progressBarContainer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      width: 100%;
+      height: 50px;
+      background-color: #f0f0f0;
+      display: none;
+      z-index: 1000;
+    }
+
+    /* 进度条样式 */
+    #progressBar {
+      font-size: 36px;
+      text-align: center;
+      width: 100%;
+      height: 100%;
+      background-color: #007bff;
+      transition: width 0.3s; /* 进度条增长动画 */
+    }
+
+  </style>
+  <script>
+    // 在首页中的 JavaScript 代码
+    var currentIndex = 0;
+    var images = [];
+    
+    function openOverlay(imageSrc, index) {
+      console.log(imageSrc)
+      console.log(index)
+      var overlay = document.getElementById('overlay');
+      var overlayImage = document.getElementById('overlayImage');
+      overlayImage.src = imageSrc;
+      overlay.style.display = 'flex';
+      
+      currentIndex = index;
+      images = document.getElementsByClassName('photo');
+    }
+
+    function closeOverlay() {
+      var overlay = document.getElementById('overlay');
+      overlay.style.display = 'none';
+    }
+
+    function showPreviousImage() {
+      if (currentIndex > 0) {
+        currentIndex--;
+        var previousImageSrc = images[currentIndex].querySelector('img').src;
+        var overlayImage = document.getElementById('overlayImage');
+        overlayImage.src = previousImageSrc;
+      }
+    }
+
+    function showNextImage() {
+      if (currentIndex < images.length - 1) {
+        currentIndex++;
+        var nextImageSrc = images[currentIndex].querySelector('img').src;
+        var overlayImage = document.getElementById('overlayImage');
+        overlayImage.src = nextImageSrc;
+      }
+    }
+
+    function redirectToRootWithParameter(path) {
+      // console.log(path);
+      path1 = path.split("\\").join(",");
+      window.location.href = '/?path=' + encodeURIComponent(path1);
+    }
+
+    function uploadImage(title) {
+      // 检查浏览器是否支持文件选择
+      if (!window.File || !window.FileReader || !window.FileList || !window.Blob) {
+        alert('浏览器不支持文件选择功能');
+        return;
+      }
+
+      // 创建文件选择器
+      const inputElement = document.createElement('input');
+      inputElement.setAttribute('type', 'file');
+      inputElement.setAttribute('accept', 'image/*');
+      inputElement.setAttribute('multiple', 'multiple'); // 允许选择多个文件
+      inputElement.setAttribute('max', '12'); // 限制最多选择12个文件
+
+      // 监听文件选择事件
+      inputElement.addEventListener('change', (e) => {
+        const files = e.target.files;
+        
+        if (files.length > 128) {
+          // 提示用户最多只能选择128张图片
+          alert('最多只能选择128张图片!');
+          return;
+        }
+
+        if (files) {
+          // 创建FormData对象
+          const formData = new FormData();
+          for (let i = 0; i < files.length; i++) {
+            formData.append('images[]', files[i]); // 使用数组语法作为字段名，以便在后端接收多个文件
+          }
+          // formData.append('image', file);
+
+          // 发送文件上传请求
+          const xhr = new XMLHttpRequest();
+          xhr.open('POST', `/upload?path=${encodeURIComponent(title.split("/").join(","))}`, true);
+
+          xhr.upload.addEventListener('progress', function(e) {
+            if (e.lengthComputable) {
+              const percentComplete = Math.round((e.loaded / e.total) * 100);
+              // 更新进度条的UI
+              updateProgressBar(percentComplete);
+            }
+          }, false);
+
+          xhr.onreadystatechange = function () {
+            if (xhr.readyState === 4 && xhr.status === 200) {
+              console.log('上传成功');
+              alert(`上传${files.length}张图片成功!`);
+              window.location.reload();
+            }
+          };
+          xhr.send(formData);
+        }
+      });
+
+      // 触发文件选择
+      inputElement.click();
+    }
+
+    // 更新进度条的函数
+    function updateProgressBar(percentage) {
+      const progressBarContainer = document.getElementById('progressBarContainer');
+      progressBarContainer.style.display = 'block';
+
+      const progressBar = document.getElementById('progressBar');
+      progressBar.style.width = percentage + '%';
+      progressBar.textContent = percentage + '%'; // 也可以添加文字内容
+    }
+
+    // 创建文件夹遮罩层
+    function openModal() {
+      const overlay = document.getElementById('add_overlay');
+      overlay.style.display = 'block';
+    }
+
+    function closeModal() {
+      const overlay = document.getElementById('add_overlay');
+      overlay.style.display = 'none';
+    }
+
+    function createFolder(title) {
+      const path = title.split("/").join(",")
+      const folderName = document.getElementById('folderName').value;
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', `/create?path=${path}&folder=${encodeURIComponent(folderName)}`, true);
+      
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          console.log(`创建文件夹成功: ${folderName}`);
+          alert(`创建文件夹${folderName}成功!`);
+          closeModal();
+          window.location.reload();
+        }
+      };
+      
+      xhr.send();
+    }
+
+    // 创建文件夹遮罩层处理
+    function setupOverlayClickHandler() {
+      // 获取遮罩层内容元素
+      // const overlay = document.getElementById('add_overlay');
+      const overlayContent = document.getElementById('overlayContent');
+
+      // 添加点击事件监听器到整个文档
+      document.addEventListener('click', function (event) {
+        const targetElement = event.target; // 获取点击事件的目标元素
+
+        // 检查点击的目标元素是否在遮罩层内部
+        const isInsideOverlay = overlayContent.contains(targetElement);
+
+        // 检查点击的目标元素是否是输入框或按钮
+        const isInputOrButton = targetElement.id === 'folderName' || targetElement.id === 'createFolder';
+
+        // 如果点击的目标元素既不在遮罩层内部，也不是输入框或按钮，则关闭遮罩层
+        if (isInsideOverlay && !isInputOrButton) {
+          closeModal();
+        }
+      });
+    }
+
+    // 在文档加载完成后调用函数
+    document.addEventListener('DOMContentLoaded', function () {
+      setupOverlayClickHandler();
+    });
+
+  </script>
+</head>
+<body>
+  <h1><%= title %></h1>
+
+  <!-- 文件夹展示 -->
+  <% dirs.forEach(function(dir) { %>
+    <div class="folder" onclick="redirectToRootWithParameter(String.raw`<%= dir.path %>`)">
+      <svg class="folder-icon" co viewBox="0 0 24 24"><path fill-rule="evenodd" d="M6.326 6.58a4.007 4.007 0 0 1 7.456-2.405c.106.182.2.367.284.553a4.007 4.007 0 0 1 5.716 5.322l-.012.021a4.006 4.006 0 0 1-1.877 7.547c-.091 0-.182-.002-.272-.006a4.008 4.008 0 0 1-7.59 1.984A4.008 4.008 0 0 1 4.39 14.09a4.008 4.008 0 0 1 1.937-7.51Zm1.888.428a2.257 2.257 0 0 1 4.053-1.958c.666 1.154.75 2.465.49 3.601-.203.893-.591 1.573-.967 1.965a6.99 6.99 0 0 0-.495-.94c-.676-1.075-1.712-2.085-3.08-2.668Zm7.595 10.259a7.024 7.024 0 0 1-3.649-2.925c-.693 1.051-1.125 2.545-.72 4.052a2.256 2.256 0 0 0 4.369-1.127Zm-2.193-3.9c.21.365.513.755.912 1.126.854.792 2.032 1.375 3.365 1.375a2.256 2.256 0 0 0 .756-4.383 6.985 6.985 0 0 1-2.74 1.588 6.547 6.547 0 0 1-2.293.294Zm.848-4.327c.173-.76.233-1.598.126-2.451a2.257 2.257 0 0 1 3.677 2.586c-.667 1.154-1.76 1.882-2.874 2.225-.833.257-1.581.273-2.106.162.55-.676.961-1.577 1.177-2.522ZM9.55 17.681c-.12-1.6.373-3.107 1.125-4.262a5.037 5.037 0 0 0-1.204-.095c-1.164.044-2.41.464-3.352 1.407a2.256 2.256 0 0 0 3.19 3.19l.241-.24Zm.263-7.074c.213.34.373.676.486.992a7.02 7.02 0 0 0-.894-.023c-1.2.044-2.51.397-3.654 1.19a2.256 2.256 0 0 1 1.168-4.358c1.287.345 2.274 1.213 2.894 2.2Z" clip-rule="evenodd"></path></svg>
+      <h3 class="folder-name"><%= dir.name %></h3>
+      <p class="folder-modified-time"><%= dir.mtime %></p>
+    </div>
+  <% }); %>
+
+  <hr>
+
+  <!-- 图片展示 -->
+  <div class="photos-container">
+    <% files.forEach(function(file, index) { %>
+      <div class="photo">
+        <img src="<%= file.path %>" alt="<%= file.name %>" onclick="openOverlay(String.raw`<%= file.path %>`, <%= index %>)">
+      </div>
+    <% }); %>
+  </div>
+
+  <!-- 图片预览遮罩层 -->
+  <div class="overlay" id="overlay" >
+    <img src="" id="overlayImage" onclick="closeOverlay()">
+    <div class="overlay-buttons">
+      <button onclick="showPreviousImage()">上一张</button>
+      <button onclick="showNextImage()">下一张</button>
+    </div>
+  </div>
+
+  <!-- 添加文件夹按钮 -->
+  <div class="add-button" onclick="openModal()">添加文件夹</div>
+
+  <!-- 添加文件夹遮罩层 -->
+  <div class="overlay" id="add_overlay" >
+    <div class="overlay-content" id="overlayContent">
+      <input type="text" id="folderName" placeholder="输入文件夹名称">
+      <button id="createFolder" onclick="createFolder(`<%= title %>`)">创建文件夹</button>
+    </div>
+  </div>
+
+  <!-- 上传按钮 -->
+  <div class="upload-button" onclick="uploadImage(`<%= title %>`)">上传图片</div>
+
+  <!-- 进度条容器 -->
+  <div id="progressBarContainer">
+    <!-- 进度条 -->
+    <div id="progressBar"></div>
+  </div>
+</body>
+</html>
