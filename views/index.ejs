@@ -253,15 +253,15 @@
       inputElement.setAttribute('type', 'file');
       inputElement.setAttribute('accept', 'image/*');
       inputElement.setAttribute('multiple', 'multiple'); // 允许选择多个文件
-      inputElement.setAttribute('max', '12'); // 限制最多选择12个文件
+      inputElement.setAttribute('max', '1024'); // 限制最多选择1024个文件
 
       // 监听文件选择事件
       inputElement.addEventListener('change', (e) => {
         const files = e.target.files;
         
-        if (files.length > 128) {
-          // 提示用户最多只能选择128张图片
-          alert('最多只能选择128张图片!');
+        if (files.length > 1024) {
+          // 提示用户最多只能选择1024张图片
+          alert('最多只能选择1024张图片!');
           return;
         }
 
